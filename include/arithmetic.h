@@ -8,7 +8,7 @@
 #include <sstream>
 #include <cmath>
 
-enum class TokenType { NUMBER, PLUS, BINARY_MINUS, MUL, DIV, POW, UNARY_MINUS, DOT,
+enum class TokenType { NUMBER, PLUS, BINARY_MINUS, MUL, DIV, POW, UNARY_MINUS,
     SIN, COS, TAN, SQRT, LOG, ACOS, ASIN, ATAN, SINH, COSH, TANH, ASINH, ACOSH, ATANH, FACT,
     LEFT_PAREN, RIGHT_PAREN, 
     VARIABLE, CONST 
