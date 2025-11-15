@@ -61,7 +61,6 @@ private:
 
 public:
     ArithmeticExpression(const std::string& expr);
-
     bool has_variables() const noexcept;
     void set_variable(const std::string& expr, double value);
     List<std::string> get_variable_names() const noexcept;

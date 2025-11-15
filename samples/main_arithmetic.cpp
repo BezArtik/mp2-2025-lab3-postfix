@@ -21,6 +21,5 @@ int main() {
             is_continue = false;
         }
     }
-
     return 0;
 }
