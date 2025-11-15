@@ -140,6 +140,12 @@ TEST(ArithmeticExpression, processiong_incorrect_operators) {
 TEST(ArithmeticExpression, processiong_incorrect_dots) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("3..14 * 2"));
 }
+TEST(ArithmeticExpression, processing_missing_operators_before) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("2(1+5)"));
+}
+TEST(ArithmeticExpression, processing_missing_operators_after) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("(1+5)2"));
+}
 
 // ============ EXIT FROM THE RANGE OF ACCEPTABLE =========
 TEST(ArithmeticExpression, processing_the_exit_from_the_range_of_acceptable_values_sqrt) {
