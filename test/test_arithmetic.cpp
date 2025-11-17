@@ -125,7 +125,7 @@ TEST(ArithmeticExpression, procession_variables_absent) {
 	EXPECT_FALSE(expr.has_variables());
 }
 
-// ====================== OTHER CHEKS ============================
+// ====================== INCORRECT EXPRESSION ============================
 
 TEST(ArithmeticExpression, processiong_division_by_zero) {
 	ArithmeticExpression expr1("1/0");
@@ -134,11 +134,17 @@ TEST(ArithmeticExpression, processiong_division_by_zero) {
 TEST(ArithmeticExpression, processiong_incorrect_parens) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("((2+4)*2"));
 }
-TEST(ArithmeticExpression, processiong_incorrect_operators) {
+TEST(ArithmeticExpression, processiong_consecutive_operators) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("2--11 * 5"));
+}
+TEST(ArithmeticExpression, processing_consecutive_operands) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("2 3"));
 }
 TEST(ArithmeticExpression, processiong_incorrect_dots) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("3..14 * 2"));
+}
+TEST(ArithmeticExpression, processing_missing_operators) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("2*(*2-3)"));
 }
 TEST(ArithmeticExpression, processing_missing_operators_before) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("2(1+5)"));
@@ -146,8 +152,20 @@ TEST(ArithmeticExpression, processing_missing_operators_before) {
 TEST(ArithmeticExpression, processing_missing_operators_after) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("(1+5)2"));
 }
+TEST(ArithmeticExpression, processing_operators_at_first) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("*1"));
+}
+TEST(ArithmeticExpression, processing_operators_in_the_end) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("1*"));
+}
+TEST(ArithmeticExpression, processing_missing_argument_in_function) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("sin()"));
+}
+
+
 
 // ============ EXIT FROM THE RANGE OF ACCEPTABLE =========
+
 TEST(ArithmeticExpression, processing_the_exit_from_the_range_of_acceptable_values_sqrt) {
 	ArithmeticExpression expr("sqrt(-1)");
 	ASSERT_ANY_THROW(expr.calculate());
@@ -178,6 +196,7 @@ TEST(ArithmeticExpression, processing_the_exit_from_the_range_of_acceptable_valu
 }
 
 // ==================== CALCULATE A COMPLEX EXPRESSION =================
+
 TEST(ArithmeticExpression, calculate_a_very_complex_expression) {
 	ArithmeticExpression expr("sin(2 * acos(-1) + pi/2) * (3 ^ (1 + 1)) - fact(3) * log(e ^ 2) + sqrt((5 + 3) * 2) / tan(pi/4)");
 	EXPECT_DOUBLE_EQ(expr.calculate(), 1.0);

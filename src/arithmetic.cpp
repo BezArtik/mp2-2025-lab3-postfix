@@ -342,7 +342,6 @@ TokenType ArithmeticExpression::string_to_token(const std::string& str) const no
 }
 
 
-
 // ==================== MATHEMATICAL OPERATIONS ====================
 
 double ArithmeticExpression::fact(double num) const {
@@ -439,7 +438,16 @@ bool ArithmeticExpression::is_variable(char c) const noexcept { return is_letter
 
 bool ArithmeticExpression::is_function_token(TokenType type) const noexcept { return get_priority(type) == 5; }
 
-bool ArithmeticExpression::is_operator_token(TokenType op) const noexcept { return get_priority(op) <= 4 && get_priority(op) >= 1; }
+bool ArithmeticExpression::is_binary_operator_token(TokenType op) const noexcept { return get_priority(op) >= 1 && get_priority(op) <= 4 && get_priority(op) != 2; }
+
+
+bool ArithmeticExpression::is_operand_token(TokenType type) const noexcept {
+    return type == TokenType::NUMBER || type == TokenType::CONST || type == TokenType::VARIABLE;
+}
+
+bool ArithmeticExpression::is_unary_operator_token(TokenType op) const noexcept {
+    return get_priority(op) != 2;
+}
 
 bool ArithmeticExpression::is_unary(const List<Token>& tokens) const noexcept {
     if (tokens.is_empty()) return true;
@@ -458,9 +466,10 @@ void ArithmeticExpression::validate_expression(const List<Token>& tokens) const 
         throw std::invalid_argument("Empty expression");
     }
 
-    validate_brackets(tokens);
     validate_operators(tokens);
-    validate_number(tokens);
+    validate_brackets(tokens);
+    validate_operands(tokens);
+    validate_number_format(tokens);
 }
 
 void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
@@ -485,41 +494,80 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
     }
 }
 
-void ArithmeticExpression::validate_operators(const List<Token>& tokens) const {
+void ArithmeticExpression::validate_operands(const List<Token>& tokens) const {
     for (size_t i = 0; i < tokens.size(); ++i) {
         const Token& token = tokens.get(i);
-        if (i + 1 < tokens.size() && is_operator_token(token.type) && is_operator_token(tokens.get(i + 1).type)) {
-            throw std::invalid_argument("Consecutive operators");
+
+        if (is_binary_operator_token(token.type)) {
+            if (i == 0 || i == tokens.size() - 1) {
+                throw std::invalid_argument("Operator at expression boundary");
+            }
+
+            const Token& prev = tokens.get(i - 1);
+            const Token& next = tokens.get(i + 1);
+
+            bool valid_left = is_operand_token(prev.type) || prev.type == TokenType::RIGHT_PAREN;
+            bool valid_right = is_operand_token(next.type) ||
+                is_unary_operator_token(next.type) ||
+                next.type == TokenType::LEFT_PAREN ||
+                is_function_token(next.type);
+
+            if (!valid_left || !valid_right) {
+                throw std::invalid_argument("Missing operand");
+            }
         }
 
-        if (i == tokens.size() - 1 && is_operator_token(token.type)) {
-            throw std::invalid_argument("Expression ends with operator");
+        if (is_function_token(token.type)) {
+            if (i + 2 < tokens.size() && tokens.get(i + 2).type == TokenType::RIGHT_PAREN) {
+                throw std::invalid_argument("Function missing argument");
+            }
+        }
+    }
+}
+
+void ArithmeticExpression::validate_operators(const List<Token>& tokens) const {
+
+    for (size_t i = 0; i < tokens.size(); ++i) {
+        const Token& token = tokens.get(i);
+
+        if (is_binary_operator_token(token.type) && i + 1 < tokens.size()) {
+            const Token& next = tokens.get(i + 1);
+            if (is_binary_operator_token(next.type)) {
+                throw std::invalid_argument("Consecutive operators");
+            }
+        }
+
+        if (is_operand_token(token.type) && i + 1 < tokens.size()) {
+            const Token& next = tokens.get(i + 1);
+            if (is_operand_token(next.type)) {
+                throw std::invalid_argument("Consecutive operands");
+            }
         }
 
         if (token.type == TokenType::UNARY_MINUS && i > 0) {
             const Token& prev = tokens.get(i - 1);
-            if (prev.type == TokenType::NUMBER || prev.type == TokenType::CONST ||
-                prev.type == TokenType::VARIABLE || prev.type == TokenType::RIGHT_PAREN) {
+            if (is_operand_token(prev.type) || prev.type == TokenType::RIGHT_PAREN) {
                 throw std::invalid_argument("Misplaced unary minus");
             }
         }
-        if (i > 0 && token.type == TokenType::LEFT_PAREN) {
+
+        if (token.type == TokenType::LEFT_PAREN && i > 0) {
             const Token& prev = tokens.get(i - 1);
-            if (prev.type == TokenType::NUMBER || prev.type == TokenType::RIGHT_PAREN) {
+            if (is_operand_token(prev.type) || prev.type == TokenType::RIGHT_PAREN) {
                 throw std::invalid_argument("Missing operator before '('");
             }
         }
 
-        if (i < tokens.size() - 1 && token.type == TokenType::RIGHT_PAREN) {
+        if (token.type == TokenType::RIGHT_PAREN && i + 1 < tokens.size()) {
             const Token& next = tokens.get(i + 1);
-            if (next.type == TokenType::NUMBER) {
+            if (is_operand_token(next.type) || next.type == TokenType::LEFT_PAREN) {
                 throw std::invalid_argument("Missing operator after ')'");
             }
         }
     }
 }
 
-void ArithmeticExpression::validate_number(const List<Token>& tokens) const {
+void ArithmeticExpression::validate_number_format(const List<Token>& tokens) const {
     for (size_t j = 0; j < tokens.size(); ++j) {
         const Token& token = tokens.get(j);
 
@@ -597,5 +645,4 @@ void input_and_calculate() {
     }
 
     std::cout << "Result: " << std::fixed << std::setprecision(7) << calc.calculate() << std::endl;
-
 }

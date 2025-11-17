@@ -12,14 +12,24 @@ int main() {
             continue;
         }
         std::string sym;
-        std::cout << "Calculate following expression? (y/n): ";
-        std::getline(std::cin, sym);
-        if (sym == "y" || sym == "Y") {
-            continue;
+        bool is_continue_2 = true;
+        while (is_continue_2) {
+            std::cout << "Calculate following expression? (y/n): ";
+            std::getline(std::cin, sym);
+            if (sym == "y" || sym == "Y") {
+                is_continue_2 = false;
+                continue;
+            }
+            else if (sym == "n" || sym == "N") {
+                is_continue_2 = false;
+                is_continue = false;
+            }
+            else {
+                std::cout << "Try again." << std::endl;
+                continue;
+            }
         }
-        else {
-            is_continue = false;
-        }
+
     }
     return 0;
 }
