@@ -11,16 +11,17 @@ int main() {
             std::cout << "Try again." << std::endl;
             continue;
         }
-        std::string sym;
+        char sym;
         bool is_continue_2 = true;
         while (is_continue_2) {
             std::cout << "Calculate following expression? (y/n): ";
-            std::getline(std::cin, sym);
-            if (sym == "y" || sym == "Y") {
+            std::cin >> sym;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            if (sym == 'y' || sym == 'Y') {
                 is_continue_2 = false;
                 continue;
             }
-            else if (sym == "n" || sym == "N") {
+            else if (sym == 'n' || sym == 'N') {
                 is_continue_2 = false;
                 is_continue = false;
             }
@@ -29,7 +30,6 @@ int main() {
                 continue;
             }
         }
-
     }
     return 0;
 }
