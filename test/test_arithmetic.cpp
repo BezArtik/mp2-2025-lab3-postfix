@@ -127,10 +127,7 @@ TEST(ArithmeticExpression, procession_variables_absent) {
 
 // ====================== INCORRECT EXPRESSION ============================
 
-TEST(ArithmeticExpression, processiong_division_by_zero) {
-	ArithmeticExpression expr1("1/0");
-	ASSERT_ANY_THROW(expr1.calculate());
-}
+
 TEST(ArithmeticExpression, processiong_incorrect_parens) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("((2+4)*2"));
 }
@@ -166,6 +163,10 @@ TEST(ArithmeticExpression, processing_missing_argument_in_function) {
 
 // ============ EXIT FROM THE RANGE OF ACCEPTABLE =========
 
+TEST(ArithmeticExpression, processiong_division_by_zero) {
+	ArithmeticExpression expr1("1/0");
+	ASSERT_ANY_THROW(expr1.calculate());
+}
 TEST(ArithmeticExpression, processing_the_exit_from_the_range_of_acceptable_values_sqrt) {
 	ArithmeticExpression expr("sqrt(-1)");
 	ASSERT_ANY_THROW(expr.calculate());
