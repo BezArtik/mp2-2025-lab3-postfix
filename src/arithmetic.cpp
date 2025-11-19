@@ -278,10 +278,6 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_postfix_string(con
         }
         result_list.push_back(Token(string_to_token(token_str), token_str));
     }
-    for (size_t j = 0; j < result_list.size(); ++j) {
-        std::cout << result_list.get(j).value << " ";
-    }
-    std::cout << std::endl;
     return result_list;
 }
 
