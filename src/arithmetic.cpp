@@ -2,7 +2,7 @@
 
 // ==================== CONSTRUCTOR AND BASIC METHODS ====================
 
-ArithmeticExpression::ArithmeticExpression(const std::string& expr): original_tokens(parse_string(expr)), resolved_tokens(original_tokens) {
+ArithmeticExpression::ArithmeticExpression(const std::string& expr) : original_tokens(parse_string(expr)), resolved_tokens(original_tokens) {
     validate_expression(original_tokens);
 }
 
@@ -14,12 +14,12 @@ double ArithmeticExpression::calculate() const {
         const Token& token = postfix_tokens.get(i);
         switch (token.type) {
         case TokenType::NUMBER:
-        case TokenType::CONST: 
+        case TokenType::CONST:
         {
             numbers.push(string_to_double(token.value));
             break;
         }
-        case TokenType::UNARY_MINUS: 
+        case TokenType::UNARY_MINUS:
         {
             double val = numbers.top(); numbers.pop();
             numbers.push(-val);
@@ -35,7 +35,7 @@ double ArithmeticExpression::calculate() const {
         case TokenType::BINARY_MINUS:
         case TokenType::MUL:
         case TokenType::DIV:
-        case TokenType::POW: 
+        case TokenType::POW:
         {
             double right = numbers.top(); numbers.pop();
             double left = numbers.top(); numbers.pop();
@@ -49,14 +49,14 @@ double ArithmeticExpression::calculate() const {
         case TokenType::TAN:
         case TokenType::SQRT:
         case TokenType::LOG:
-        case TokenType::ACOS:  
+        case TokenType::ACOS:
         case TokenType::ASIN:
         case TokenType::ATAN:
         case TokenType::SINH:
         case TokenType::COSH:
         case TokenType::TANH:
         case TokenType::ACOSH:
-        case TokenType::ASINH: 
+        case TokenType::ASINH:
         case TokenType::ATANH:
         case TokenType::FACT:
         {
@@ -79,7 +79,7 @@ std::string ArithmeticExpression::to_postfix() const {
         Token token = resolved_tokens.get(i);
         switch (token.type) {
         case TokenType::NUMBER:
-        case TokenType::CONST: 
+        case TokenType::CONST:
         {
             res_str += token.value + " ";
             break;
@@ -88,7 +88,7 @@ std::string ArithmeticExpression::to_postfix() const {
         case TokenType::COS:
         case TokenType::TAN:
         case TokenType::SQRT:
-        case TokenType::LOG: 
+        case TokenType::LOG:
         case TokenType::ACOS:
         case TokenType::ASIN:
         case TokenType::ATAN:
@@ -103,12 +103,12 @@ std::string ArithmeticExpression::to_postfix() const {
             stack_operator.push(token);
             break;
         }
-        case TokenType::LEFT_PAREN: 
+        case TokenType::LEFT_PAREN:
         {
             stack_operator.push(token);
             break;
         }
-        case TokenType::RIGHT_PAREN: 
+        case TokenType::RIGHT_PAREN:
         {
             while (!stack_operator.empty() && stack_operator.top().type != TokenType::LEFT_PAREN) {
                 res_str += token_to_string(stack_operator.top()) + " ";
@@ -129,7 +129,7 @@ std::string ArithmeticExpression::to_postfix() const {
         case TokenType::UNARY_PLUS:
         case TokenType::MUL:
         case TokenType::DIV:
-        case TokenType::POW: 
+        case TokenType::POW:
         {
             while (!stack_operator.empty() && get_priority(stack_operator.top().type) >= get_priority(token.type)) {
                 res_str += token_to_string(stack_operator.top()) + " ";
@@ -198,13 +198,16 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_string(const std::
 
     while (i < expr.length()) {
         if (is_operator(expr[i]) || expr[i] == '(' || expr[i] == ')') {
-            TokenType op_type = string_to_token(std::string(1,expr[i]));
+            TokenType op_type;
 
             if (expr[i] == '-') {
                 op_type = is_unary(result_list) ? TokenType::UNARY_MINUS : TokenType::BINARY_MINUS;
             }
-            if (expr[i] == '+') {
+            else if (expr[i] == '+') {
                 op_type = is_unary(result_list) ? TokenType::UNARY_PLUS : TokenType::BINARY_PLUS;
+            }
+            else {
+                op_type = string_to_token(std::string(1, expr[i]));
             }
 
             result_list.push_back(Token(op_type, std::string(1, expr[i])));
@@ -251,6 +254,10 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_string(const std::
             throw std::invalid_argument("Unexpected character: " + std::string(1, expr[i]));
         }
     }
+    for (size_t j = 0; j < result_list.size(); ++j) {
+        std::cout << result_list.get(j).value << " ";
+    }
+    std::cout << std::endl;
     return result_list;
 }
 
@@ -275,6 +282,10 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_postfix_string(con
         }
         result_list.push_back(Token(string_to_token(token_str), token_str));
     }
+    for (size_t j = 0; j < result_list.size(); ++j) {
+        std::cout << result_list.get(j).value << " ";
+    }
+    std::cout << std::endl;
     return result_list;
 }
 
@@ -282,10 +293,10 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_postfix_string(con
 
 int ArithmeticExpression::get_priority(TokenType op) const noexcept {
     switch (op) {
-    case TokenType::SIN: 
-    case TokenType::COS: 
-    case TokenType::TAN: 
-    case TokenType::SQRT: 
+    case TokenType::SIN:
+    case TokenType::COS:
+    case TokenType::TAN:
+    case TokenType::SQRT:
     case TokenType::LOG:
     case TokenType::ACOS:
     case TokenType::ASIN:
@@ -300,13 +311,13 @@ int ArithmeticExpression::get_priority(TokenType op) const noexcept {
         return 5;
     case TokenType::POW:
         return 4;
-    case TokenType::MUL: 
+    case TokenType::MUL:
     case TokenType::DIV:
         return 3;
     case TokenType::UNARY_MINUS:
     case TokenType::UNARY_PLUS:
         return 2;
-    case TokenType::BINARY_PLUS: 
+    case TokenType::BINARY_PLUS:
     case TokenType::BINARY_MINUS:
         return 1;
     case TokenType::LEFT_PAREN:
@@ -317,7 +328,7 @@ int ArithmeticExpression::get_priority(TokenType op) const noexcept {
 }
 
 std::string ArithmeticExpression::token_to_string(const Token& token) const noexcept {
-    switch(token.type) {
+    switch (token.type) {
     case TokenType::UNARY_MINUS: return "~";
     case TokenType::UNARY_PLUS:  return "$";
     default: return token.value;
@@ -325,7 +336,7 @@ std::string ArithmeticExpression::token_to_string(const Token& token) const noex
 }
 
 TokenType ArithmeticExpression::string_to_token(const std::string& str) const noexcept {
-    if (str == "$")      return TokenType::UNARY_PLUS;
+    if (str == "$")     return TokenType::UNARY_PLUS;
     if (str == "~")     return TokenType::UNARY_MINUS;
     if (str == "+")     return TokenType::BINARY_PLUS;
     if (str == "-")     return TokenType::BINARY_MINUS;
@@ -409,7 +420,7 @@ double ArithmeticExpression::apply_function(TokenType func_type, double arg) con
     case TokenType::ATANH:
         if (std::abs(arg) >= 1.0) throw std::invalid_argument("Expression is not defined");
         return std::atanh(arg);
-    case TokenType::FACT: 
+    case TokenType::FACT:
         if (std::floor(arg) != arg || arg < 0.0) throw std::invalid_argument("Epression is not defined");
         return fact(arg);
     default: throw std::invalid_argument("Unknown function type");
@@ -419,9 +430,6 @@ double ArithmeticExpression::apply_function(TokenType func_type, double arg) con
 double ArithmeticExpression::apply_constant(const std::string& cnst) const {
     if (cnst == "pi") return std::acos(-1.0);
     if (cnst == "e")  return std::exp(1.0);
-    else {
-        throw std::runtime_error("Uknown constant: " + cnst);
-    }
 }
 
 double ArithmeticExpression::string_to_double(const std::string& expr) const {
@@ -451,24 +459,17 @@ bool ArithmeticExpression::is_variable(char c) const noexcept { return is_letter
 
 bool ArithmeticExpression::is_function_token(TokenType type) const noexcept { return get_priority(type) == 5; }
 
-bool ArithmeticExpression::is_binary_operator_token(TokenType op) const noexcept { return get_priority(op) >= 1 && get_priority(op) <= 4 && get_priority(op) != 2; }
-
+bool ArithmeticExpression::is_operator_token(TokenType op) const noexcept { return get_priority(op) >= 1 && get_priority(op) <= 4; }
 
 bool ArithmeticExpression::is_operand_token(TokenType type) const noexcept {
     return type == TokenType::NUMBER || type == TokenType::CONST || type == TokenType::VARIABLE;
 }
 
-bool ArithmeticExpression::is_unary_operator_token(TokenType op) const noexcept {
-    return get_priority(op) != 2;
-}
-
 bool ArithmeticExpression::is_unary(const List<Token>& tokens) const noexcept {
     if (tokens.is_empty()) return true;
     const TokenType& last = tokens.back().type;
-    return last == TokenType::LEFT_PAREN ||
-           last == TokenType::BINARY_PLUS ||
-           last == TokenType::MUL  ||
-           last == TokenType::DIV  ||
+    return last == TokenType::LEFT_PAREN  ||
+           is_operator_token(last) ||
            is_function_token(last);
 }
 
@@ -479,10 +480,26 @@ void ArithmeticExpression::validate_expression(const List<Token>& tokens) const 
         throw std::invalid_argument("Empty expression");
     }
 
+    validate_operands(tokens);
     validate_operators(tokens);
     validate_brackets(tokens);
-    validate_operands(tokens);
     validate_number_format(tokens);
+}
+
+void ArithmeticExpression::validate_operands(const List<Token>& tokens) const {
+    for (size_t i = 1; i + 1 < tokens.size(); ++i) {
+        const Token& token = tokens.get(i);
+        const Token& prev = tokens.get(i - 1);
+        const Token& next = tokens.get(i + 1);
+        if (is_operator_token(token.type) && !is_operand_token(prev.type) && 
+            prev.type == TokenType::LEFT_PAREN && get_priority(token.type) != 2) {
+            throw std::invalid_argument("Missing left operand");
+        }
+        else if (is_operator_token(token.type) && !is_operand_token(next.type) && !is_function_token(next.type) && 
+            next.type == TokenType::RIGHT_PAREN) {
+            throw std::invalid_argument("Missing right operand");
+        }
+    }
 }
 
 void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
@@ -511,39 +528,21 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
     }
 }
 
-void ArithmeticExpression::validate_operands(const List<Token>& tokens) const {
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        const Token& token = tokens.get(i);
-
-        if (is_binary_operator_token(token.type)) {
-            if (i == 0 || i == tokens.size() - 1) {
-                throw std::invalid_argument("Operator at expression boundary");
-            }
-
-            const Token& prev = tokens.get(i - 1);
-            const Token& next = tokens.get(i + 1);
-
-            bool valid_left = is_operand_token(prev.type) || prev.type == TokenType::RIGHT_PAREN;
-            bool valid_right = is_operand_token(next.type) ||
-                is_unary_operator_token(next.type) ||
-                next.type == TokenType::LEFT_PAREN ||
-                is_function_token(next.type);
-
-            if (!valid_left || !valid_right) {
-                throw std::invalid_argument("Missing operand");
-            }
-        }
-    }
-}
 
 void ArithmeticExpression::validate_operators(const List<Token>& tokens) const {
+    if (is_operator_token(tokens.get(0).type) && get_priority(tokens.get(0).type) != 2) {
+        throw std::invalid_argument("Binary operator at beginning");
+    }
+    else if (is_operator_token(tokens.get(tokens.size()-1).type) && get_priority(tokens.get(tokens.size()-1).type) != 2) {
+        throw std::invalid_argument("Binary operators at end");
+    }
 
     for (size_t i = 0; i < tokens.size(); ++i) {
         const Token& token = tokens.get(i);
 
-        if (is_binary_operator_token(token.type) && i + 1 < tokens.size()) {
+        if (is_operator_token(token.type) && i + 1 < tokens.size()) {
             const Token& next = tokens.get(i + 1);
-            if (is_binary_operator_token(next.type)) {
+            if (is_operator_token(next.type)) {
                 throw std::invalid_argument("Consecutive operators");
             }
         }

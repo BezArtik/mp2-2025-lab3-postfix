@@ -39,6 +39,14 @@ TEST(ArithmeticExpression, can_calculate_expression_with_paren) {
 	ArithmeticExpression expr1("(2+1)*4");
 	EXPECT_DOUBLE_EQ(expr1.calculate(), 12.0);
 }
+TEST(ArithmeticExpression, mul_is_commutative) {
+	ArithmeticExpression expr1("3*(1+10)"), expr2("(1+10)*3");
+	EXPECT_DOUBLE_EQ(expr1.calculate(), expr2.calculate());
+}
+TEST(ArithmeticExpression, add_is_commutative) {
+	ArithmeticExpression expr1("3+5"), expr2("5+3");
+	EXPECT_DOUBLE_EQ(expr1.calculate(), expr2.calculate());
+}
 
 // ========================= FUNCTION ===================================
 
@@ -140,8 +148,11 @@ TEST(ArithmeticExpression, processing_consecutive_operands) {
 TEST(ArithmeticExpression, processiong_incorrect_dots) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("3..14 * 2"));
 }
-TEST(ArithmeticExpression, processing_missing_operators) {
+TEST(ArithmeticExpression, processing_missing_operators_left) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("2*(*2-3)"));
+}
+TEST(ArithmeticExpression, processing_missing_operators_right) {
+	ASSERT_ANY_THROW(ArithmeticExpression expr("2*(2-3*)"));
 }
 TEST(ArithmeticExpression, processing_missing_operators_before) {
 	ASSERT_ANY_THROW(ArithmeticExpression expr("2(1+5)"));

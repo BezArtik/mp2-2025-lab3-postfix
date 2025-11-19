@@ -7,6 +7,9 @@
 #include <iomanip>
 #include <sstream>
 #include <cmath>
+#include <string>
+#include <stdexcept>
+#include <iostream>
 
 enum class TokenType {
     NUMBER, BINARY_PLUS, BINARY_MINUS, MUL, DIV, POW, UNARY_MINUS, UNARY_PLUS,
@@ -33,9 +36,9 @@ private:
 
     // VALIDATION
     void validate_expression(const List<Token>& tokens) const;
+    void validate_operands(const List<Token>& tokens) const;
     void validate_brackets(const List<Token>& tokens) const;
     void validate_operators(const List<Token>& tokens) const;
-    void validate_operands(const List<Token>& tokens) const;
     void validate_number_format(const List<Token>& tokens) const;
 
     // TOKEN OPERATIONS
@@ -55,8 +58,7 @@ private:
     bool is_unary(const List<Token>& tokens) const noexcept;
     bool is_function_token(TokenType type) const noexcept;
     bool is_operand_token(TokenType type) const noexcept;
-    bool is_binary_operator_token(TokenType op) const noexcept;
-    bool is_unary_operator_token(TokenType op) const noexcept;
+    bool is_operator_token(TokenType op) const noexcept;
 
     // MATH OPERATIONS
     double string_to_double(const std::string& expr) const;
