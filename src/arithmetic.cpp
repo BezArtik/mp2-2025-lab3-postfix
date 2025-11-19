@@ -254,10 +254,6 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_string(const std::
             throw std::invalid_argument("Unexpected character: " + std::string(1, expr[i]));
         }
     }
-    for (size_t j = 0; j < result_list.size(); ++j) {
-        std::cout << result_list.get(j).value << " ";
-    }
-    std::cout << std::endl;
     return result_list;
 }
 
