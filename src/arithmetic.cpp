@@ -495,7 +495,7 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
 
     }
     if (balance > 0) {
-        throw std::invalid_argument("Unmatched opening parenthesis at the position");
+        throw std::invalid_argument("Unmatched opening parenthesis");
     }
 
 }
