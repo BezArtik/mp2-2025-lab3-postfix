@@ -32,7 +32,6 @@ private:
 
     // PARSING
     List<Token> parse_string(const std::string& expr) const;
-    List<Token> parse_postfix_string(const std::string& expr) const;
 
     // VALIDATION
     void validate_expression(const List<Token>& tokens) const;
@@ -42,8 +41,7 @@ private:
     void validate_number_format(const List<Token>& tokens) const;
 
     // TOKEN OPERATIONS
-    std::string to_postfix() const;
-    std::string token_to_string(const Token& token) const noexcept;
+    List<Token> to_postfix_tokens() const;
     TokenType string_to_token(const std::string& str) const noexcept;
     int get_priority(TokenType op) const noexcept;
 

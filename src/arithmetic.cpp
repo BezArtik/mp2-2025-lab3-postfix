@@ -7,7 +7,7 @@ ArithmeticExpression::ArithmeticExpression(const std::string& expr) : original_t
 }
 
 double ArithmeticExpression::calculate() const {
-    List<Token> postfix_tokens = parse_postfix_string(to_postfix());
+    List<Token> postfix_tokens = to_postfix_tokens();
     Stack<double> numbers;
 
     for (size_t i = 0; i < postfix_tokens.size(); ++i) {
@@ -69,83 +69,6 @@ double ArithmeticExpression::calculate() const {
     }
 
     return numbers.top();
-}
-
-std::string ArithmeticExpression::to_postfix() const {
-    Stack<Token> stack_operator;
-    std::string res_str;
-
-    for (size_t i = 0; i < resolved_tokens.size(); ++i) {
-        Token token = resolved_tokens.get(i);
-        switch (token.type) {
-        case TokenType::NUMBER:
-        case TokenType::CONST:
-        {
-            res_str += token.value + " ";
-            break;
-        }
-        case TokenType::SIN:
-        case TokenType::COS:
-        case TokenType::TAN:
-        case TokenType::SQRT:
-        case TokenType::LOG:
-        case TokenType::ACOS:
-        case TokenType::ASIN:
-        case TokenType::ATAN:
-        case TokenType::SINH:
-        case TokenType::COSH:
-        case TokenType::TANH:
-        case TokenType::ACOSH:
-        case TokenType::ASINH:
-        case TokenType::ATANH:
-        case TokenType::FACT:
-        {
-            stack_operator.push(token);
-            break;
-        }
-        case TokenType::LEFT_PAREN:
-        {
-            stack_operator.push(token);
-            break;
-        }
-        case TokenType::RIGHT_PAREN:
-        {
-            while (!stack_operator.empty() && stack_operator.top().type != TokenType::LEFT_PAREN) {
-                res_str += token_to_string(stack_operator.top()) + " ";
-                stack_operator.pop();
-            }
-            if (!stack_operator.empty()) {
-                stack_operator.pop();
-            }
-            if (!stack_operator.empty() && is_function_token(stack_operator.top().type)) {
-                res_str += token_to_string(stack_operator.top()) + " ";
-                stack_operator.pop();
-            }
-            break;
-        }
-        case TokenType::BINARY_PLUS:
-        case TokenType::BINARY_MINUS:
-        case TokenType::UNARY_MINUS:
-        case TokenType::UNARY_PLUS:
-        case TokenType::MUL:
-        case TokenType::DIV:
-        case TokenType::POW:
-        {
-            while (!stack_operator.empty() && get_priority(stack_operator.top().type) >= get_priority(token.type)) {
-                res_str += token_to_string(stack_operator.top()) + " ";
-                stack_operator.pop();
-            }
-            stack_operator.push(token);
-            break;
-        }
-        }
-    }
-
-    while (!stack_operator.empty()) {
-        res_str += token_to_string(stack_operator.top()) + " ";
-        stack_operator.pop();
-    }
-    return res_str;
 }
 
 // ==================== WORKING WITH VARIABLES ====================
@@ -257,31 +180,84 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_string(const std::
     return result_list;
 }
 
-List<ArithmeticExpression::Token> ArithmeticExpression::parse_postfix_string(const std::string& expr) const {
-    List<Token> result_list;
-    size_t i = 0;
-
-    while (i < expr.length()) {
-        while (i < expr.length() && is_space(expr[i])) {
-            ++i;
-        }
-        if (i >= expr.length()) break;
-
-        size_t start = i;
-        while (i < expr.length() && !is_space(expr[i])) {
-            ++i;
-        }
-
-        std::string token_str;
-        for (size_t j = start; j < i; ++j) {
-            token_str += expr[j];
-        }
-        result_list.push_back(Token(string_to_token(token_str), token_str));
-    }
-    return result_list;
-}
-
 // ==================== AUXILIARY METHODS ====================
+
+List<ArithmeticExpression::Token> ArithmeticExpression::to_postfix_tokens() const {
+    Stack<Token> stack_operator;
+    List<Token> result_tokens;
+
+    for (size_t i = 0; i < resolved_tokens.size(); ++i) {
+        const Token& token = resolved_tokens.get(i);
+        switch (token.type) {
+        case TokenType::NUMBER:
+        case TokenType::CONST:
+        {
+            result_tokens.push_back(token);
+            break;
+        }
+        case TokenType::SIN:
+        case TokenType::COS:
+        case TokenType::TAN:
+        case TokenType::SQRT:
+        case TokenType::LOG:
+        case TokenType::ACOS:
+        case TokenType::ASIN:
+        case TokenType::ATAN:
+        case TokenType::SINH:
+        case TokenType::COSH:
+        case TokenType::TANH:
+        case TokenType::ACOSH:
+        case TokenType::ASINH:
+        case TokenType::ATANH:
+        case TokenType::FACT:
+        {
+            stack_operator.push(token);
+            break;
+        }
+        case TokenType::LEFT_PAREN:
+        {
+            stack_operator.push(token);
+            break;
+        }
+        case TokenType::RIGHT_PAREN:
+        {
+            while (!stack_operator.empty() && stack_operator.top().type != TokenType::LEFT_PAREN) {
+                result_tokens.push_back(stack_operator.top());
+                stack_operator.pop();
+            }
+            if (!stack_operator.empty()) {
+                stack_operator.pop();
+            }
+            if (!stack_operator.empty() && is_function_token(stack_operator.top().type)) {
+                result_tokens.push_back(stack_operator.top());
+                stack_operator.pop();
+            }
+            break;
+        }
+        case TokenType::BINARY_PLUS:
+        case TokenType::BINARY_MINUS:
+        case TokenType::UNARY_MINUS:
+        case TokenType::UNARY_PLUS:
+        case TokenType::MUL:
+        case TokenType::DIV:
+        case TokenType::POW:
+        {
+            while (!stack_operator.empty() && get_priority(stack_operator.top().type) >= get_priority(token.type)) {
+                result_tokens.push_back(stack_operator.top());
+                stack_operator.pop();
+            }
+            stack_operator.push(token);
+            break;
+        }
+        }
+    }
+
+    while (!stack_operator.empty()) {
+        result_tokens.push_back(stack_operator.top());
+        stack_operator.pop();
+    }
+    return result_tokens;
+}
 
 int ArithmeticExpression::get_priority(TokenType op) const noexcept {
     switch (op) {
@@ -319,14 +295,6 @@ int ArithmeticExpression::get_priority(TokenType op) const noexcept {
     }
 }
 
-std::string ArithmeticExpression::token_to_string(const Token& token) const noexcept {
-    switch (token.type) {
-    case TokenType::UNARY_MINUS: return "~";
-    case TokenType::UNARY_PLUS:  return "$";
-    default: return token.value;
-    }
-}
-
 TokenType ArithmeticExpression::string_to_token(const std::string& str) const noexcept {
     if (str == "$")     return TokenType::UNARY_PLUS;
     if (str == "~")     return TokenType::UNARY_MINUS;
@@ -358,7 +326,7 @@ TokenType ArithmeticExpression::string_to_token(const std::string& str) const no
 }
 
 
-// ==================== MATHEMATICAL OPERATIONS ====================
+// ==================== MATH OPERATIONS ====================
 
 double ArithmeticExpression::fact(double num) const {
     uint64_t num_int = static_cast<uint64_t>(num);
@@ -433,7 +401,7 @@ double ArithmeticExpression::string_to_double(const std::string& expr) const {
     }
 }
 
-// ==================== CHECKS =========================
+// ==================== TYPE CHECKS =========================
 
 bool ArithmeticExpression::is_constant(const std::string& c) const noexcept { return c == "pi" || c == "e"; }
 
@@ -467,7 +435,7 @@ bool ArithmeticExpression::is_unary(const List<Token>& tokens) const noexcept {
            is_function_token(last);
 }
 
-//===================== VALIDATE =====================
+//===================== VALIDATION =====================
 
 void ArithmeticExpression::validate_expression(const List<Token>& tokens) const {
     if (tokens.is_empty()) {
