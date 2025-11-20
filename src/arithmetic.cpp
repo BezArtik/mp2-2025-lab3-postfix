@@ -15,6 +15,7 @@ double ArithmeticExpression::calculate() const {
         switch (token.type) {
         case TokenType::NUMBER:
         case TokenType::CONST:
+        case TokenType::VARIABLE:
         {
             numbers.push(string_to_double(token.value));
             break;
@@ -102,11 +103,11 @@ List<std::string> ArithmeticExpression::get_variable_names() const noexcept {
 }
 
 void ArithmeticExpression::set_variable(const std::string& var, double value) {
-    for (size_t i = 0; i < resolved_tokens.size(); ++i) {
-        Token& token = resolved_tokens.get(i);
-        if (token.type == TokenType::VARIABLE && token.value == var) {
-            token.type = TokenType::NUMBER;
-            token.value = std::to_string(value);
+    for (size_t i = 0; i < original_tokens.size(); ++i) {
+        const Token& orig_token = original_tokens.get(i);
+        Token& res_token = resolved_tokens.get(i);
+        if (orig_token.type == TokenType::VARIABLE && orig_token.value == var) {
+            res_token.value = std::to_string(value);
         }
     }
 }
@@ -189,6 +190,7 @@ List<ArithmeticExpression::Token> ArithmeticExpression::to_postfix_tokens() cons
         switch (token.type) {
         case TokenType::NUMBER:
         case TokenType::CONST:
+        case TokenType::VARIABLE:
         {
             result_tokens.push_back(token);
             break;
@@ -595,22 +597,48 @@ void input_and_calculate() {
     std::getline(std::cin, input_string);
 
     ArithmeticExpression calc(input_string);
-    if (calc.has_variables()) {
-        List<std::string> vars = calc.get_variable_names();
-        for (size_t i = 0; i < vars.size(); ++i) {
-            std::string value_expr;
-            std::cout << "Enter a value for " << vars.get(i) << ": ";
-            std::getline(std::cin, value_expr);
 
-            ArithmeticExpression value_calc(value_expr);
-            if (value_calc.has_variables()) {
-                throw std::invalid_argument("Nested variables not allowed in variable values");
+    bool is_continue = true;
+    while (is_continue) {
+        if (calc.has_variables()) {
+            List<std::string> vars = calc.get_variable_names();
+            for (size_t i = 0; i < vars.size(); ++i) {
+                std::string value_expr;
+                std::cout << "Enter a value for " << vars.get(i) << ": ";
+                std::getline(std::cin, value_expr);
+
+                ArithmeticExpression value_calc(value_expr);
+                if (value_calc.has_variables()) {
+                    throw std::invalid_argument("Nested variables not allowed in variable values");
+                }
+
+                double value = value_calc.calculate();
+                calc.set_variable(vars.get(i), value);
             }
-
-            double value = value_calc.calculate();
-            calc.set_variable(vars.get(i), value);
         }
+
+        std::cout << "Result: " << std::fixed << std::setprecision(7) << calc.calculate() << std::endl;
+
+        if (calc.has_variables()) {
+            char sym;
+            std::cout << "Recalculate the expression with other variable values? (y/n): ";
+            std::cin >> sym;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            if (sym == 'y' || sym == 'Y') {
+                continue;
+            }
+            else if (sym == 'n' || sym == 'N') {
+                is_continue = false;
+            }
+            else {
+                std::cout << "Try again." << std::endl;
+                continue;
+            }
+        }
+        else {
+            is_continue = false;
+        }
+
     }
 
-    std::cout << "Result: " << std::fixed << std::setprecision(7) << calc.calculate() << std::endl;
 }

@@ -132,7 +132,17 @@ TEST(ArithmeticExpression, procession_variables_absent) {
 	ArithmeticExpression expr("1+2");
 	EXPECT_FALSE(expr.has_variables());
 }
-
+TEST(ArithmeticExpression, can_overwrite_the_values_of_variables) {
+	ArithmeticExpression expr("x+y");
+	expr.set_variable("x", 10.0);
+	expr.set_variable("y", 5.0);
+	double val_1 = expr.calculate();
+	expr.set_variable("x", 15.0);
+	expr.set_variable("y", 10.0);
+	double val_2 = expr.calculate();
+	EXPECT_DOUBLE_EQ(val_1, 15.0);
+	EXPECT_DOUBLE_EQ(val_2, 25.0);
+}
 // ====================== INCORRECT EXPRESSION ============================
 
 
