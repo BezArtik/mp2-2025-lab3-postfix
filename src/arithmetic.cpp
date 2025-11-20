@@ -453,6 +453,8 @@ bool ArithmeticExpression::is_function_token(TokenType type) const noexcept { re
 
 bool ArithmeticExpression::is_operator_token(TokenType op) const noexcept { return get_priority(op) >= 1 && get_priority(op) <= 4; }
 
+bool ArithmeticExpression::is_unary_operator_token(TokenType op) const noexcept { return get_priority(op) == 2; }
+
 bool ArithmeticExpression::is_operand_token(TokenType type) const noexcept {
     return type == TokenType::NUMBER || type == TokenType::CONST || type == TokenType::VARIABLE;
 }
@@ -479,17 +481,28 @@ void ArithmeticExpression::validate_expression(const List<Token>& tokens) const 
 }
 
 void ArithmeticExpression::validate_operands(const List<Token>& tokens) const {
-    for (size_t i = 1; i + 1 < tokens.size(); ++i) {
+    for (size_t i = 0; i < tokens.size(); ++i) {
         const Token& token = tokens.get(i);
-        const Token& prev = tokens.get(i - 1);
-        const Token& next = tokens.get(i + 1);
-        if (is_operator_token(token.type) && !is_operand_token(prev.type) && 
-            prev.type == TokenType::LEFT_PAREN && get_priority(token.type) != 2) {
-            throw std::invalid_argument("Missing left operand");
+        if (i > 0 && is_operator_token(token.type) && 
+            !is_unary_operator_token(token.type)) {
+            const Token& prev = tokens.get(i - 1);   
+            if (!is_operand_token(prev.type) && 
+                prev.type == TokenType::LEFT_PAREN) {
+                throw std::invalid_argument("Missing left operand");
+            }
         }
-        else if (is_operator_token(token.type) && !is_operand_token(next.type) && !is_function_token(next.type) && 
-            next.type == TokenType::RIGHT_PAREN) {
-            throw std::invalid_argument("Missing right operand");
+        if (i + 1 < tokens.size() && is_operator_token(token.type)) {
+            const Token& next = tokens.get(i + 1);
+            if (!is_operand_token(next.type) && !is_function_token(next.type) &&
+                next.type == TokenType::RIGHT_PAREN) {
+                throw std::invalid_argument("Missing right operand");
+            }
+        }
+        if (i + 1 < tokens.size() && is_operand_token(token.type)) {
+            const Token& next = tokens.get(i + 1);
+            if (is_operand_token(next.type)) {
+                throw std::invalid_argument("Consecutive operands");
+            }
         }
     }
 }
@@ -522,27 +535,21 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
 
 
 void ArithmeticExpression::validate_operators(const List<Token>& tokens) const {
-    if (is_operator_token(tokens.get(0).type) && get_priority(tokens.get(0).type) != 2) {
+    if (is_operator_token(tokens.get(0).type) && !is_unary_operator_token(tokens.get(0).type)) {
         throw std::invalid_argument("Binary operator at beginning");
     }
-    else if (is_operator_token(tokens.get(tokens.size()-1).type) && get_priority(tokens.get(tokens.size()-1).type) != 2) {
+    else if (is_operator_token(tokens.get(tokens.size()-1).type) && 
+        !is_unary_operator_token(tokens.get(tokens.size()-1).type)) {
         throw std::invalid_argument("Binary operators at end");
     }
 
     for (size_t i = 0; i < tokens.size(); ++i) {
         const Token& token = tokens.get(i);
 
-        if (is_operator_token(token.type) && i + 1 < tokens.size()) {
+        if (is_operator_token(token.type) && i + 1 < tokens.size() ){
             const Token& next = tokens.get(i + 1);
             if (is_operator_token(next.type)) {
                 throw std::invalid_argument("Consecutive operators");
-            }
-        }
-
-        if (is_operand_token(token.type) && i + 1 < tokens.size()) {
-            const Token& next = tokens.get(i + 1);
-            if (is_operand_token(next.type)) {
-                throw std::invalid_argument("Consecutive operands");
             }
         }
 
