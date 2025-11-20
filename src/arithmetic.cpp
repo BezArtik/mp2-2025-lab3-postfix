@@ -1,6 +1,6 @@
 #include "arithmetic.h"
 
-// ==================== CONSTRUCTOR AND BASIC METHODS ====================
+// ==================== PUBLIC METHODS ====================
 
 ArithmeticExpression::ArithmeticExpression(const std::string& expr) : original_tokens(parse_string(expr)), resolved_tokens(original_tokens) {
     validate_expression(original_tokens);
@@ -70,8 +70,6 @@ double ArithmeticExpression::calculate() const {
 
     return numbers.top();
 }
-
-// ==================== WORKING WITH VARIABLES ====================
 
 bool ArithmeticExpression::has_variables() const noexcept {
     for (size_t i = 0; i < original_tokens.size(); ++i) {
@@ -180,7 +178,7 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_string(const std::
     return result_list;
 }
 
-// ==================== AUXILIARY METHODS ====================
+// ==================== TOKEN OPERATIONS ====================
 
 List<ArithmeticExpression::Token> ArithmeticExpression::to_postfix_tokens() const {
     Stack<Token> stack_operator;
@@ -456,20 +454,20 @@ void ArithmeticExpression::validate_operands(const List<Token>& tokens) const {
             const Token& prev = tokens.get(i - 1);   
             if (!is_operand_token(prev.type) && 
                 prev.type == TokenType::LEFT_PAREN) {
-                throw std::invalid_argument("Missing left operand");
+                throw std::invalid_argument("Missing left operand at the position " + std::to_string(i-1));
             }
         }
         if (i + 1 < tokens.size() && is_operator_token(token.type)) {
             const Token& next = tokens.get(i + 1);
             if (!is_operand_token(next.type) && !is_function_token(next.type) &&
                 next.type == TokenType::RIGHT_PAREN) {
-                throw std::invalid_argument("Missing right operand");
+                throw std::invalid_argument("Missing right operand at the position " + std::to_string(i+1));
             }
         }
         if (i + 1 < tokens.size() && is_operand_token(token.type)) {
             const Token& next = tokens.get(i + 1);
             if (is_operand_token(next.type)) {
-                throw std::invalid_argument("Consecutive operands");
+                throw std::invalid_argument("Consecutive operands at the position " + std::to_string(i+1));
             }
         }
     }
@@ -485,7 +483,7 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
             ++balance;
 
             if (i + 1 < tokens.size() && tokens.get(i + 1).type == TokenType::RIGHT_PAREN) {
-                throw std::invalid_argument("Empty parentheses");
+                throw std::invalid_argument("Empty parentheses at the position" + std::to_string(i));
             }
         }
         else if (token.type == TokenType::RIGHT_PAREN) {
@@ -494,11 +492,12 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
                 throw std::invalid_argument("Unmatched closing parenthesis");
             }
         }
+
+    }
+    if (balance > 0) {
+        throw std::invalid_argument("Unmatched opening parenthesis at the position");
     }
 
-    if (balance > 0) {
-        throw std::invalid_argument("Unmatched opening parenthesis");
-    }
 }
 
 
@@ -517,21 +516,21 @@ void ArithmeticExpression::validate_operators(const List<Token>& tokens) const {
         if (is_operator_token(token.type) && i + 1 < tokens.size() ){
             const Token& next = tokens.get(i + 1);
             if (is_operator_token(next.type)) {
-                throw std::invalid_argument("Consecutive operators");
+                throw std::invalid_argument("Consecutive operators at the position" + std::to_string(i+1));
             }
         }
 
         if (token.type == TokenType::LEFT_PAREN && i > 0) {
             const Token& prev = tokens.get(i - 1);
             if (is_operand_token(prev.type) || prev.type == TokenType::RIGHT_PAREN) {
-                throw std::invalid_argument("Missing operator before '('");
+                throw std::invalid_argument("Missing operator before '(' at the position " + std::to_string(i-1));
             }
         }
 
         if (token.type == TokenType::RIGHT_PAREN && i + 1 < tokens.size()) {
             const Token& next = tokens.get(i + 1);
             if (is_operand_token(next.type) || next.type == TokenType::LEFT_PAREN) {
-                throw std::invalid_argument("Missing operator after ')'");
+                throw std::invalid_argument("Missing operator after ')' at the position " + std::to_string(i+1));
             }
         }
     }
@@ -543,7 +542,6 @@ void ArithmeticExpression::validate_number_format(const List<Token>& tokens) con
 
         if (token.type == TokenType::NUMBER) {
             size_t i = 0, counter_dot = 0;
-
 
             if (token.value.length() == 0) {
                 throw std::invalid_argument("Empty number");
