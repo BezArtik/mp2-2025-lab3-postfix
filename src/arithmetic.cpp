@@ -485,7 +485,7 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
             ++balance;
 
             if (i + 1 < tokens.size() && tokens.get(i + 1).type == TokenType::RIGHT_PAREN) {
-                throw std::invalid_argument("Empty parentheses at the position" + std::to_string(i));
+                throw std::invalid_argument("Empty parentheses at the position " + std::to_string(i));
             }
         }
         else if (token.type == TokenType::RIGHT_PAREN) {
@@ -518,7 +518,7 @@ void ArithmeticExpression::validate_operators(const List<Token>& tokens) const {
         if (is_operator_token(token.type) && i + 1 < tokens.size() ){
             const Token& next = tokens.get(i + 1);
             if (is_operator_token(next.type)) {
-                throw std::invalid_argument("Consecutive operators at the position" + std::to_string(i+1));
+                throw std::invalid_argument("Consecutive operators at the position " + std::to_string(i+1));
             }
         }
 
