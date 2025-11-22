@@ -3,7 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-sing and added support for multiple calculations of expressions with variables
+sing and added support for multiple calculations of expressions with variables.
 out/
 
 # User-specific files
