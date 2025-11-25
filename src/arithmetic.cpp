@@ -396,9 +396,25 @@ double ArithmeticExpression::string_to_double(const std::string& expr) const {
     if (is_constant(expr)) {
         return apply_constant(expr);
     }
-    else {
-        return std::stod(expr);
+    double res = 0.0;
+    size_t i = 0, count_after_dot = 0, number = 0;
+    bool digit_after_dot = false;
+
+    while (i < expr.length()) {
+        if (is_digit(expr[i])) {
+            if (digit_after_dot) {
+                ++count_after_dot;
+            }
+            number = number * 10 + expr[i] - '0';
+            ++i;
+        }
+        if (is_dot(expr[i])) {
+            ++i;
+            digit_after_dot = true;
+        }
     }
+    res = static_cast<double>(number) / std::pow(10, count_after_dot);
+    return res;
 }
 
 // ==================== TYPE CHECKS =========================
@@ -499,7 +515,6 @@ void ArithmeticExpression::validate_brackets(const List<Token>& tokens) const {
     if (balance > 0) {
         throw std::invalid_argument("Unmatched opening parenthesis");
     }
-
 }
 
 
