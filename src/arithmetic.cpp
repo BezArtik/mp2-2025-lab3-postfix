@@ -9,7 +9,6 @@ ArithmeticExpression::ArithmeticExpression(const std::string& expr) : original_t
 double ArithmeticExpression::calculate() const {
     List<Token> postfix_tokens = to_postfix_tokens();
     Stack<double> numbers;
-
     for (size_t i = 0; i < postfix_tokens.size(); ++i) {
         const Token& token = postfix_tokens.get(i);
         switch (token.type) {
@@ -102,14 +101,30 @@ List<std::string> ArithmeticExpression::get_variable_names() const noexcept {
     return names;
 }
 
-void ArithmeticExpression::set_variable(const std::string& var, double value) {
-    for (size_t i = 0; i < original_tokens.size(); ++i) {
-        const Token& orig_token = original_tokens.get(i);
-        Token& res_token = resolved_tokens.get(i);
-        if (orig_token.type == TokenType::VARIABLE && orig_token.value == var) {
-            res_token.value = std::to_string(value);
+std::string substitute_variable(const std::string& expr, const std::string& var, const std::string& value) {
+    std::string result;
+    size_t i = 0;
+
+    while (i < expr.length()) {
+        bool found = true;
+        for (size_t j = 0; j < var.length(); j++) {
+            if (i + j >= expr.length() || expr[i + j] != var[j]) {
+                found = false;
+                break;
+            }
+        }
+
+        if (found) {
+            result += "(" + value + ")";
+            i += var.length();
+        }
+        else {
+            result += expr[i];
+            i++;
         }
     }
+
+    return result;
 }
 
 // ==================== PARSING ====================
@@ -121,18 +136,21 @@ List<ArithmeticExpression::Token> ArithmeticExpression::parse_string(const std::
     while (i < expr.length()) {
         if (is_operator(expr[i]) || expr[i] == '(' || expr[i] == ')') {
             TokenType op_type;
-
-            if (expr[i] == '-') {
-                op_type = is_unary(result_list) ? TokenType::UNARY_MINUS : TokenType::BINARY_MINUS;
+            std::string op_val;
+            if (expr[i] == '-' && is_unary(result_list)) {
+                op_type = TokenType::UNARY_MINUS;
+                op_val = "~";
             }
-            else if (expr[i] == '+') {
-                op_type = is_unary(result_list) ? TokenType::UNARY_PLUS : TokenType::BINARY_PLUS;
+            else if (expr[i] == '+' && is_unary(result_list)) {
+                op_type = TokenType::UNARY_PLUS;
+                op_val = "$";
             }
             else {
                 op_type = string_to_token(std::string(1, expr[i]));
+                op_val = std::string(1, expr[i]);
             }
 
-            result_list.push_back(Token(op_type, std::string(1, expr[i])));
+            result_list.push_back(Token(op_type, op_val));
             ++i;
         }
         else if (is_digit(expr[i])) {
@@ -399,7 +417,6 @@ double ArithmeticExpression::string_to_double(const std::string& expr) const {
     double res = 0.0;
     size_t i = 0, count_after_dot = 0, number = 0;
     bool digit_after_dot = false;
-
     while (i < expr.length()) {
         if (is_digit(expr[i])) {
             if (digit_after_dot) {
@@ -605,36 +622,39 @@ void ArithmeticExpression::validate_number_format(const List<Token>& tokens) con
 
 // ==================== INTERFACE ====================
 
-void input_and_calculate() {
 
+
+void input_and_calculate() {
     std::string input_string;
     std::cout << "Enter an expression: ";
     std::getline(std::cin, input_string);
 
-    ArithmeticExpression calc(input_string);
-
     bool is_continue = true;
     while (is_continue) {
+        ArithmeticExpression calc(input_string);
+
         if (calc.has_variables()) {
             List<std::string> vars = calc.get_variable_names();
+
+            std::string final_expression = input_string;
             for (size_t i = 0; i < vars.size(); ++i) {
                 std::string value_expr;
                 std::cout << "Enter a value for " << vars.get(i) << ": ";
                 std::getline(std::cin, value_expr);
 
-                ArithmeticExpression value_calc(value_expr);
-                if (value_calc.has_variables()) {
-                    throw std::invalid_argument("Nested variables not allowed in variable values");
+                ArithmeticExpression check_calc(value_expr);
+                if (check_calc.has_variables()) {
+                    throw std::invalid_argument("Nested variables not allowed");
                 }
 
-                double value = value_calc.calculate();
-                calc.set_variable(vars.get(i), value);
+                final_expression = substitute_variable(final_expression, vars.get(i), value_expr);
             }
+            calc = ArithmeticExpression(final_expression);
         }
 
         std::cout << "Result: " << std::fixed << std::setprecision(7) << calc.calculate() << std::endl;
 
-        if (calc.has_variables()) {
+        if (ArithmeticExpression(input_string).has_variables()) {
             char sym;
             std::cout << "Recalculate the expression with other variable values? (y/n): ";
             std::cin >> sym;
@@ -653,7 +673,6 @@ void input_and_calculate() {
         else {
             is_continue = false;
         }
-
     }
-
 }
+

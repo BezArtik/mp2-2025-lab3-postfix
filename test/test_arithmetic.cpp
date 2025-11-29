@@ -133,13 +133,20 @@ TEST(ArithmeticExpression, procession_variables_absent) {
 	EXPECT_FALSE(expr.has_variables());
 }
 TEST(ArithmeticExpression, can_overwrite_the_values_of_variables) {
-	ArithmeticExpression expr("x+y");
-	expr.set_variable("x", 10.0);
-	expr.set_variable("y", 5.0);
-	double val_1 = expr.calculate();
-	expr.set_variable("x", 15.0);
-	expr.set_variable("y", 10.0);
-	double val_2 = expr.calculate();
+	std::string base_expr = "x+y";
+
+	std::string expr1 = base_expr;
+	expr1 = substitute_variable(expr1, "x", "10");
+	expr1 = substitute_variable(expr1, "y", "5");
+	ArithmeticExpression calc1(expr1);
+	double val_1 = calc1.calculate();
+
+	std::string expr2 = base_expr; 
+	expr2 = substitute_variable(expr2, "x", "15");
+	expr2 = substitute_variable(expr2, "y", "10");
+	ArithmeticExpression calc2(expr2);
+	double val_2 = calc2.calculate();
+
 	EXPECT_DOUBLE_EQ(val_1, 15.0);
 	EXPECT_DOUBLE_EQ(val_2, 25.0);
 }
@@ -224,11 +231,15 @@ TEST(ArithmeticExpression, calculate_a_very_complex_expression) {
 	EXPECT_DOUBLE_EQ(expr.calculate(), 1.0);
 }
 TEST(ArithmeticExpression, calculate_a_very_complex_expression_with_variables) {
-	ArithmeticExpression expr("(sin(pi/(2*x)) ^ 2 + cos(pi/(2*x)) ^ 2) * (log(e ^ (y * z)) / (y * z)) - (sqrt(w ^ 2) / w) + (fact(v) / (fact(v-1) * v))");
-	expr.set_variable("x", 2.0);
-	expr.set_variable("y", 3.0);
-	expr.set_variable("z", 4.0);
-	expr.set_variable("w", 5.0);
-	expr.set_variable("v", 4.0);
+	std::string base_expr = "(sin(pi/(2*x)) ^ 2 + cos(pi/(2*x)) ^ 2) * (log(e ^ (y * z)) / (y * z)) - (sqrt(w ^ 2) / w) + (fact(v) / (fact(v-1) * v))";
+
+	std::string expr_str = base_expr;
+	expr_str = substitute_variable(expr_str, "x", "2");
+	expr_str = substitute_variable(expr_str, "y", "3");
+	expr_str = substitute_variable(expr_str, "z", "4");
+	expr_str = substitute_variable(expr_str, "w", "5");
+	expr_str = substitute_variable(expr_str, "v", "4");
+
+	ArithmeticExpression expr(expr_str);
 	EXPECT_DOUBLE_EQ(expr.calculate(), 1.0);
 }
