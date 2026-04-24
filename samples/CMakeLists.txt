@@ -1,4 +1,7 @@
-file(GLOB hdrs "*.h*" "../include/*.h")
-file(GLOB srcs "*.cpp" "../src/arithmetic.cpp")
-
-add_executable(postfix ${srcs} ${hdrs})
+add_executable(arithmetic_sample)
+target_sources(arithmetic_sample PRIVATE
+    main_arithmetic.cpp
+)
+target_link_libraries(arithmetic_sample PRIVATE
+    project::arithmetic
+)
