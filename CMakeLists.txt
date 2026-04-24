@@ -25,11 +25,10 @@ target_include_directories(arithmetic PUBLIC
 )
 target_sources(arithmetic PRIVATE
     src/arithmetic_expression/arithmetic.cpp
-    # Будущие файлы:
-    # src/arithmetic_expression/parser.cpp
-    # src/arithmetic_expression/validator.cpp
-    # src/arithmetic_expression/calculator.cpp
-    # src/arithmetic_expression/tokenizer.cpp
+    src/arithmetic_expression/validator.cpp
+    
+    src/arithmetic_expression/token_utils.cpp
+    
 )
 target_link_libraries(arithmetic PUBLIC project::containers)
 add_library(project::arithmetic ALIAS arithmetic)
