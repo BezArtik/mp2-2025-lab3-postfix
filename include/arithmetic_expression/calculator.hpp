@@ -17,8 +17,6 @@ public:
 
     double calculate(iter_token begin, iter_token end) const;
 
-    static vector_str get_variable_names(iter_token begin, iter_token end);
-
 private:
     double evaluate_postfix(iter_token begin, iter_token end) const;
     double string_to_double(const std::string& str) const;

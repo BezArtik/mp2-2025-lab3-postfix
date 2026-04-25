@@ -37,30 +37,6 @@ bool Calculator::has_variable(const std::string& name) const {
     return variables_.find(name) != variables_.end();
 }
 
-Calculator::vector_str Calculator::get_variable_names(iter_token begin, iter_token end) {
-    vector_str names;
-
-    for (auto it = begin; it != end; ++it) {
-        if (it->type_ == TokenType::VARIABLE) {
-            //bool found = false;
-            //for (const auto& name : names) {
-            //    if (name == it->value_) {
-            //        found = true;
-            //        break;
-            //    }
-            //}
-			auto found = std::any_of(names.begin(), names.end(), [&](const std::string& name) {
-				return name == it->value_;
-				});
-            if (!found) {
-                names.push_back(it->value_);
-            }
-        }
-    }
-
-    return names;
-}
-
 double Calculator::calculate(iter_token begin, iter_token end) const {
     auto postfix = to_postfix(begin, end);
     return evaluate_postfix(postfix.begin(), postfix.end());

@@ -1,7 +1,9 @@
 #include "arithmetic_expression/token_utils.hpp"
 #include "arithmetic_expression/token.hpp"
+#include "containers/vector.hpp"
 #include <cstdint>
 #include <string>
+#include <algorithm>
 
 namespace arithmetic::token_utils {
 
@@ -91,6 +93,22 @@ TokenType char_to_token(int8_t c) noexcept {
     case ')': return TokenType::RIGHT_PAREN;
     default:  return TokenType::NUMBER;
     }
+}
+
+containers::Vector<std::string> get_variable_names(iter_token begin, iter_token end) {
+    containers::Vector<std::string> names;
+    for (auto it = begin; it != end; ++it) {
+        if (it->type_ == TokenType::VARIABLE) {
+            auto found = std::any_of(names.begin(), names.end(),
+                [&](const auto& name) {
+                    return name == it->value_;
+                });
+            if (!found) {
+                names.push_back(it->value_);
+            }
+        }
+    }
+    return names;
 }
 
 } 

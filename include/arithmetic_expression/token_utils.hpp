@@ -1,5 +1,6 @@
 #pragma once
 #include "arithmetic_expression/token.hpp"
+#include "containers/vector.hpp"
 
 namespace arithmetic::token_utils {
 
@@ -11,5 +12,6 @@ bool is_operand_token(TokenType type) noexcept;
 int32_t get_priority(TokenType op) noexcept;
 TokenType string_to_token(const std::string& str) noexcept;
 TokenType char_to_token(int8_t c) noexcept;
+containers::Vector<std::string> get_variable_names(iter_token begin, iter_token end);
 
 }
