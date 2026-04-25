@@ -4,6 +4,7 @@
 #include <limits>
 #include <iomanip>
 #include <exception>
+#include <ios>
 
 namespace sample {
 
@@ -57,8 +58,6 @@ void input_and_calculate() {
     }
 }
 
-} 
-
 bool ask_yes_no() {
     char answer;
     while (true) {
@@ -71,6 +70,8 @@ bool ask_yes_no() {
     }
 }
 
+}
+
 int main() {
     do {
         try {
@@ -78,7 +79,7 @@ int main() {
         } catch (const std::exception& e) {
             std::cout << "Error: " << e.what() << std::endl;
         }
-    } while (ask_yes_no());
+    } while (sample::ask_yes_no());
 
     return 0;
 }

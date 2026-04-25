@@ -18,7 +18,7 @@ struct Token {
 	Token(TokenType t, std::string v) : type_(t), value_(std::move(v)) {}
 };
 
-using TokenVec = containers::Vector<Token>;
-using TokenIter = typename TokenVec::const_iterator;
+using vector_tokens = containers::Vector<Token>;
+using iter_token = typename vector_tokens::const_iterator;
 
 };

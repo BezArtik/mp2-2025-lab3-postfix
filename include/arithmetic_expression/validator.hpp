@@ -8,13 +8,13 @@ public:
 
 	Validator() = default;
 
-	void validate(TokenIter begin, TokenIter end) const;
+	void validate(iter_token begin, iter_token end) const;
 
 private:
-	void validate_operands(TokenIter begin, TokenIter end) const;
-	void validate_brackets(TokenIter begin, TokenIter end) const;
-	void validate_operators(TokenIter begin, TokenIter end) const;
-	void validate_number_format(TokenIter begin, TokenIter end) const;
+	void validate_operands(iter_token begin, iter_token end) const;
+	void validate_brackets(iter_token begin, iter_token end) const;
+	void validate_operators(iter_token begin, iter_token end) const;
+	void validate_number_format(iter_token begin, iter_token end) const;
 };
 
 }

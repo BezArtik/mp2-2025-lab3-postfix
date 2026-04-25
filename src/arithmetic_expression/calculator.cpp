@@ -9,6 +9,7 @@
 #include <limits>
 #include <exception>
 #include <iterator>
+#include <algorithm>
 
 namespace arithmetic {
 
@@ -36,18 +37,21 @@ bool Calculator::has_variable(const std::string& name) const {
     return variables_.find(name) != variables_.end();
 }
 
-Calculator::VecStr Calculator::get_variable_names(TokenIter begin, TokenIter end) {
-    VecStr names;
+Calculator::vector_str Calculator::get_variable_names(iter_token begin, iter_token end) {
+    vector_str names;
 
     for (auto it = begin; it != end; ++it) {
         if (it->type_ == TokenType::VARIABLE) {
-            bool found = false;
-            for (const auto& name : names) {
-                if (name == it->value_) {
-                    found = true;
-                    break;
-                }
-            }
+            //bool found = false;
+            //for (const auto& name : names) {
+            //    if (name == it->value_) {
+            //        found = true;
+            //        break;
+            //    }
+            //}
+			auto found = std::any_of(names.begin(), names.end(), [&](const std::string& name) {
+				return name == it->value_;
+				});
             if (!found) {
                 names.push_back(it->value_);
             }
@@ -57,12 +61,12 @@ Calculator::VecStr Calculator::get_variable_names(TokenIter begin, TokenIter end
     return names;
 }
 
-double Calculator::calculate(TokenIter begin, TokenIter end) const {
+double Calculator::calculate(iter_token begin, iter_token end) const {
     auto postfix = to_postfix(begin, end);
     return evaluate_postfix(postfix.begin(), postfix.end());
 }
 
-double Calculator::evaluate_postfix(TokenIter begin, TokenIter end) const {
+double Calculator::evaluate_postfix(iter_token begin, iter_token end) const {
     containers::Stack<double> stack;
 
     for (auto it = begin; it != end; ++it) {
@@ -115,9 +119,9 @@ double Calculator::evaluate_postfix(TokenIter begin, TokenIter end) const {
 }
 
 
-TokenVec Calculator::to_postfix(TokenIter begin, TokenIter end) const {
+vector_tokens Calculator::to_postfix(iter_token begin, iter_token end) const {
     containers::Stack<Token> operator_stack;
-    TokenVec output;
+    vector_tokens output;
     output.reserve(std::distance(begin, end));
 
     for (auto it = begin; it != end; ++it) {

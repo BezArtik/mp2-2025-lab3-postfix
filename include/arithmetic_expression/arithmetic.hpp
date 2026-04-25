@@ -21,7 +21,7 @@ private:
     Validator validator_;
     Calculator calculator_;
 
-    TokenVec original_tokens_;
+    vector_tokens original_tokens_;
 };
 
 } 

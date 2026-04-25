@@ -8,7 +8,7 @@ class Parser {
 public:
     Parser() = default;
 
-    TokenVec parse(const std::string& expr);
+    vector_tokens parse(const std::string& expr);
 
 private:
     enum class Expect { OPERAND, OPERATOR };

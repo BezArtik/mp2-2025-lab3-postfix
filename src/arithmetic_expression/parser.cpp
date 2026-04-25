@@ -8,8 +8,8 @@
 
 namespace arithmetic {
 
-TokenVec Parser::parse(const std::string& expr) {
-    TokenVec result_vector;
+vector_tokens Parser::parse(const std::string& expr) {
+    vector_tokens result_vector;
     result_vector.reserve(expr.size() / 2);
 
     auto it = expr.begin();

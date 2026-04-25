@@ -9,7 +9,7 @@
 
 namespace arithmetic {
 
-void Validator::validate(TokenIter begin, TokenIter end) const {
+void Validator::validate(iter_token begin, iter_token end) const {
     validate_operands(begin, end);
     validate_brackets(begin, end);
     validate_operators(begin, end);
@@ -20,7 +20,7 @@ void Validator::validate(TokenIter begin, TokenIter end) const {
         throw std::invalid_argument("Invalid operand format at the position " \
         + std::to_string(std::distance(begin, it)));
 
-void Validator::validate_operands(TokenIter begin, TokenIter end) const {
+void Validator::validate_operands(iter_token begin, iter_token end) const {
     for (auto it = begin; it != end; ++it) {
         if (it != begin && token_utils::is_operator_token(it->type_) && 
             !token_utils::is_unary_operator_token(it->type_)) {
@@ -46,8 +46,9 @@ void Validator::validate_operands(TokenIter begin, TokenIter end) const {
 
 #undef INVALID_OPERAND_FORMAT
 
+#define INVALID_BRACKET_FORMAT throw std::invalid_argument("Invalid bracket format");
 
-void Validator::validate_brackets(TokenIter begin, TokenIter end) const {
+void Validator::validate_brackets(iter_token begin, iter_token end) const {
     auto empty_parens = [begin, end](auto it) {
         auto next = std::next(it);
         return next != end && next->type_ == TokenType::RIGHT_PAREN;
@@ -57,27 +58,21 @@ void Validator::validate_brackets(TokenIter begin, TokenIter end) const {
     for (auto it = begin; it != end; ++it) {
         if (it->type_ == TokenType::LEFT_PAREN) {
             ++balance;
-            if (empty_parens(it)) {
-                throw std::invalid_argument("Empty parentheses at the position " +
-                    std::to_string(std::distance(begin, it)));
-            }
+            if (empty_parens(it)) INVALID_BRACKET_FORMAT
         } else if (it->type_ == TokenType::RIGHT_PAREN) {
-            if (--balance < 0) {
-                throw std::invalid_argument("Unmatched closing parenthesis");
-            }
+            --balance;
+            if (balance < 0) INVALID_BRACKET_FORMAT
         }
     }
 
-    if (balance > 0) {
-        throw std::invalid_argument("Unmatched opening parenthesis");
-    }
+    if (balance > 0) INVALID_BRACKET_FORMAT
 }
 
 #define INVALID_OPERATOR_FORMAT(it) \
         throw std::invalid_argument("Invalid operator format at the position " \
         + std::to_string(std::distance(begin, it)));
 
-void Validator::validate_operators(TokenIter begin, TokenIter end) const {
+void Validator::validate_operators(iter_token begin, iter_token end) const {
     if (token_utils::is_operator_token(begin->type_) && 
         !token_utils::is_unary_operator_token(begin->type_)) {
 		INVALID_OPERATOR_FORMAT(begin)
@@ -108,13 +103,15 @@ void Validator::validate_operators(TokenIter begin, TokenIter end) const {
     }
 }
 
+#undef INVALID_BRACKET_FORMAT
+
 #undef INVALID_OPERATOR_FORMAT
 
 #define INVALID_NUMBER_FORMAT \
         throw std::invalid_argument("Invalid number format at the position " \
         + std::to_string(std::distance(begin, it)));
 
-void Validator::validate_number_format(TokenIter begin, TokenIter end) const {
+void Validator::validate_number_format(iter_token begin, iter_token end) const {
     for (auto it = begin; it != end; ++it) {
         if (it->type_ == TokenType::NUMBER) {
             const std::string& value = it->value_;
